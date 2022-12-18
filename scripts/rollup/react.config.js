@@ -1,25 +1,31 @@
 import generatePackageJson from 'rollup-plugin-generate-package-json';
-import { getPackageJSON, resolvePkgPath, getBaseRollupPlugins } from './utils';
+import {
+	getPackageJSON,
+	getBaseRollupPlugins,
+	getPackagePath,
+	getOutputPath
+} from './utils';
 
 const { name } = getPackageJSON('react');
-const pkgPath = resolvePkgPath(name);
-const pkgDistPath = resolvePkgPath(name, true);
+const inputFolder = getPackagePath(name);
+const outputFolder = getOutputPath(name);
 
 const basePlugins = getBaseRollupPlugins();
 
 export default [
+	// react
 	{
-		input: `${pkgPath}/index.ts`,
+		input: `${inputFolder}/index.ts`,
 		output: {
-			file: `${pkgDistPath}/index.js`,
+			file: `${outputFolder}/index.js`,
 			name: 'index.js',
 			format: 'umd'
 		},
 		plugins: [
 			...basePlugins,
 			generatePackageJson({
-				inputFolder: pkgPath,
-				outputFolder: pkgDistPath,
+				inputFolder: inputFolder,
+				outputFolder: outputFolder,
 				baseContents: ({ name, description, version }) => ({
 					name,
 					description,
@@ -28,5 +34,25 @@ export default [
 				})
 			})
 		]
+	},
+	// jsx-runtime
+	{
+		input: `${inputFolder}/jsx-runtime.ts`,
+		output: {
+			file: `${outputFolder}/jsx-runtime.js`,
+			name: 'jsx-runtime.js',
+			format: 'umd'
+		},
+		plugins: basePlugins
+	},
+	// jsx-dev-runtime
+	{
+		input: `${inputFolder}/jsx-dev-runtime.ts`,
+		output: {
+			file: `${outputFolder}/jsx-dev-runtime.js`,
+			name: 'jsx-dev-runtime.js',
+			format: 'umd'
+		},
+		plugins: basePlugins
 	}
 ];
