@@ -1,10 +1,12 @@
 import { beginWork } from './beginWork';
 import { completeWork } from './completeWork';
-import { FiberNode } from './fiber';
+import { createWorkInProgress, FiberNode } from './ReactFiber';
+import { FiberRootNode } from './ReactFiberRoot';
 
 let workInProgress: FiberNode | null = null;
 
-function renderRoot(root: FiberNode) {
+export function scheduleUpdateOnFiber(root: FiberRootNode, fiber: FiberNode) {
+	// 暂时不用fiber，因为前面已经从fiber找到了rootNode
 	// 初始化
 	prepareFreshStack(root);
 
@@ -18,8 +20,8 @@ function renderRoot(root: FiberNode) {
 	} while (true);
 }
 
-function prepareFreshStack(fiber: FiberNode) {
-	workInProgress = fiber;
+function prepareFreshStack(root: FiberRootNode) {
+	workInProgress = createWorkInProgress(root.current, {});
 }
 function workLoop() {
 	while (workInProgress !== null) {
