@@ -13,6 +13,7 @@ export function scheduleUpdateOnFiber(root: FiberRootNode) {
 	do {
 		try {
 			workLoop();
+			break;
 		} catch (error) {
 			console.warn('workLoop发生错误', error);
 			workInProgress = null;
