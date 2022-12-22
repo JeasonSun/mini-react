@@ -1,6 +1,11 @@
-import { Props, Key, Ref } from 'shared/ReactTypes';
+import { Props, Key, Ref, ReactElement } from 'shared/ReactTypes';
 import { Flags, NoFlags } from './ReactFiberFlags';
-import { HostRoot, WorkTag } from './ReactWorkTags';
+import {
+	HostComponent,
+	HostRoot,
+	WorkTag,
+	FunctionComponent
+} from './ReactWorkTags';
 
 export class FiberNode {
 	tag: WorkTag;
@@ -12,10 +17,11 @@ export class FiberNode {
 	child: FiberNode | null;
 	index: number;
 	ref: Ref;
-	pendingProps: Props | null;
+	pendingProps: Props;
 	memoizedProps: Props | null;
 	alternate: FiberNode | null;
 	flags: Flags;
+	subtreeFlags: Flags;
 	elementType: any;
 	updateQueue: any;
 	memoizedState: any;
@@ -23,7 +29,7 @@ export class FiberNode {
 	nextEffect: FiberNode | null;
 	firstEffect: FiberNode | null;
 	lastEffect: FiberNode | null;
-	constructor(tag: WorkTag, pendingProps: Props | null, key: Key) {
+	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		// ========== 实例属性: 作为静态的数据结构，保存节点的信息 =============
 		/**
 		 * Fiber类型：WorkTag
@@ -66,6 +72,7 @@ export class FiberNode {
 
 		// ========= 更新导致的DOM操作，打标签，并保存在effectList单向链表中 ========
 		this.flags = NoFlags; // 表示当前fiber如何更新（插入/更新/删除）
+		this.subtreeFlags = NoFlags;
 
 		this.nextEffect = null; // 下一个需要更新的fiber
 		this.firstEffect = null; // 指向所有子节点里，需要更新的fiber里的第一个
@@ -82,14 +89,14 @@ export class FiberNode {
 
 export const createFiber = function (
 	tag: WorkTag,
-	pendingProps: Props | null,
+	pendingProps: Props,
 	key: Key
 ): FiberNode {
 	return new FiberNode(tag, pendingProps, key);
 };
 
 export function createHostRootFiber(): FiberNode {
-	return createFiber(HostRoot, null, null);
+	return createFiber(HostRoot, {}, null);
 }
 
 export function createWorkInProgress(current: FiberNode, pendingProps: Props) {
@@ -116,4 +123,26 @@ export function createWorkInProgress(current: FiberNode, pendingProps: Props) {
 	workInProgress.ref = current.ref;
 
 	return workInProgress;
+}
+
+/**
+ * 将 ReactElement 转为 Fiber对象
+ * @param element
+ * @returns
+ */
+export function createFiberFromElement(element: ReactElement) {
+	const { key, type, props } = element;
+	let fiberTag: WorkTag;
+	if (typeof type === 'string') {
+		fiberTag = HostComponent;
+	} else {
+		if (__DEV__) {
+			console.error('尚未处理此type的ReactElement', element);
+		}
+		fiberTag = FunctionComponent;
+	}
+
+	const fiber = createFiber(fiberTag, props, key);
+	fiber.type = type;
+	return fiber;
 }

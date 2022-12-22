@@ -72,3 +72,12 @@ export function markUpdateFromFiberToRoot(sourceFiber: FiberNode) {
 	}
 	return node.tag === HostRoot ? node.stateNode : null;
 }
+
+// export function processUpdateQueue(workInProgress: FiberNode) {
+// 	const queue = workInProgress.updateQueue;
+
+// 	let pendingQueue = queue.shared.pending;
+// 	if (pendingQueue !== null) {
+// 		queue.shared.pending = null;
+// 	}
+// }

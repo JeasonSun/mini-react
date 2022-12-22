@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import cjs from '@rollup/plugin-commonjs';
 import ts from 'rollup-plugin-typescript2';
+import replace from '@rollup/plugin-alias';
 
 const outputDir = path.resolve(__dirname, '../../dist/node_modules');
 const packageDir = path.resolve(__dirname, '../../packages');
@@ -20,6 +21,12 @@ export function getPackageJSON(packageName) {
 	return JSON.parse(packageInfo);
 }
 
-export function getBaseRollupPlugins({ typescript = {} } = {}) {
-	return [cjs(), ts(typescript)];
+export function getBaseRollupPlugins({
+	alias = {
+		__DEV__: true,
+		preventAssignment: true
+	},
+	typescript = {}
+} = {}) {
+	return [replace(alias), cjs(), ts(typescript)];
 }

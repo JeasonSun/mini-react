@@ -18,8 +18,10 @@ export function createFiberRoot(containerInfo: Container) {
 export class FiberRootNode {
 	containerInfo: Container;
 	current: FiberNode | null;
+	finishedWork: FiberNode | null;
 	constructor(containerInfo: Container) {
 		this.containerInfo = containerInfo;
 		this.current = null;
+		this.finishedWork = null;
 	}
 }
