@@ -11,8 +11,8 @@ import { Placement } from './ReactFiberFlags';
 function ChildReconciler(shouldTrackEffects: boolean) {
 	function placeSingleChild(newFiber: FiberNode) {
 		// 如果要跟踪副作用并且没有老的fiber， 那就标记为新建
-		if (shouldTrackEffects && !newFiber.alternate) {
-			newFiber.flags = Placement;
+		if (shouldTrackEffects && newFiber.alternate === null) {
+			newFiber.flags |= Placement;
 		}
 		return newFiber;
 	}

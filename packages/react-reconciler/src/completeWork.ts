@@ -1,8 +1,5 @@
 import { NoFlags } from './ReactFiberFlags';
-import {
-	appendInitialChild,
-	createTextInstance
-} from './../../react-dom/src/hostConfig';
+import { appendInitialChild, createTextInstance } from 'hostConfig';
 import { HostComponent, HostText, HostRoot } from './ReactWorkTags';
 import { FiberNode } from './ReactFiber';
 import { createInstance, Instance } from 'hostConfig';
