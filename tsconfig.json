@@ -1,12 +1,13 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "jsx": "react-jsx",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": [
       "ESNext",
-      "DOM"
+      "DOM",
     ],
     "moduleResolution": "Node",
     "strict": true,

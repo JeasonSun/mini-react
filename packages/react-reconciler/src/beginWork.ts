@@ -1,7 +1,13 @@
 import { ReactElement } from 'shared/ReactTypes';
-import { HostComponent, HostRoot, HostText } from './ReactWorkTags';
+import {
+	HostComponent,
+	HostRoot,
+	HostText,
+	FunctionComponent
+} from './ReactWorkTags';
 import { FiberNode } from './ReactFiber';
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber';
+import { renderWithHooks } from './ReactFiberHooks';
 export const beginWork = (workInProgress: FiberNode): FiberNode | null => {
 	console.log('beginWork开始', workInProgress);
 	switch (workInProgress.tag) {
@@ -11,6 +17,8 @@ export const beginWork = (workInProgress: FiberNode): FiberNode | null => {
 			return updateHostComponent(workInProgress);
 		case HostText:
 			return null;
+		case FunctionComponent:
+			return updateFunctionComponent(workInProgress);
 		default:
 			if (__DEV__) {
 				console.error('beginWork未实现的Tag类型', workInProgress.tag);
@@ -34,6 +42,12 @@ function updateHostRoot(workInProgress: FiberNode) {
 function updateHostComponent(workInProgress: FiberNode) {
 	const nextProps = workInProgress.pendingProps;
 	const nextChildren = nextProps?.children;
+	reconcileChildren(workInProgress, nextChildren);
+	return workInProgress.child;
+}
+
+function updateFunctionComponent(workInProgress: FiberNode) {
+	const nextChildren = renderWithHooks(workInProgress);
 	reconcileChildren(workInProgress, nextChildren);
 	return workInProgress.child;
 }

@@ -135,11 +135,13 @@ export function createFiberFromElement(element: ReactElement) {
 	let fiberTag: WorkTag;
 	if (typeof type === 'string') {
 		fiberTag = HostComponent;
+	} else if (typeof type === 'function') {
+		fiberTag = FunctionComponent;
 	} else {
 		if (__DEV__) {
 			console.error('尚未处理此type的ReactElement', element);
 		}
-		fiberTag = FunctionComponent;
+		// fiberTag = FunctionComponent;
 	}
 
 	const fiber = createFiber(fiberTag, props, key);
