@@ -20,6 +20,8 @@
 		"@rollup/plugin-replace": "^5.0.2",
 		"@typescript-eslint/eslint-plugin": "^5.46.0",
 		"@typescript-eslint/parser": "^5.46.0",
+		"@types/react": "^18.0.24",
+		"@types/react-dom": "^18.0.8",
 		"@vitejs/plugin-react": "^3.0.0",
 		"commitlint": "^17.3.0",
 		"eslint": "^8.29.0",

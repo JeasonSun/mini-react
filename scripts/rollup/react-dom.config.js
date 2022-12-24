@@ -7,7 +7,7 @@ import {
 	getOutputPath
 } from './utils';
 
-const { name } = getPackageJSON('react-dom');
+const { name, peerDependencies } = getPackageJSON('react-dom');
 const inputFolder = getPackagePath(name);
 const outputFolder = getOutputPath(name);
 
@@ -29,6 +29,7 @@ export default [
 				format: 'umd'
 			}
 		],
+		external: [...Object.keys(peerDependencies)],
 		plugins: [
 			...basePlugins,
 			alias({
