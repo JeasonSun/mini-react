@@ -2,7 +2,8 @@ module.exports = {
 	env: {
 		browser: true,
 		es2021: true,
-		node: true
+		node: true,
+		jest: true
 	},
 	extends: [
 		'eslint:recommended',
@@ -21,6 +22,7 @@ module.exports = {
 		'no-case-declarations': 'off',
 		'no-constant-condition': 'off',
 		'@typescript-eslint/ban-ts-comment': 'off',
+		'@typescript-eslint/no-unused-vars': 'off',
 		'no-prototype-builtins': 'off',
 		'prefer-rest-params': 'off'
 	}

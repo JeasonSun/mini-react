@@ -162,3 +162,11 @@ const ReactElement = function (
 	};
 	return element;
 };
+
+export function isValidElement(object: any) {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		object.$$typeof === REACT_ELEMENT_TYPE
+	);
+}

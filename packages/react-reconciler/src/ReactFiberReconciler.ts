@@ -26,4 +26,5 @@ export function updateContainer(
 	if (root) {
 		scheduleUpdateOnFiber(root);
 	}
+	return element;
 }

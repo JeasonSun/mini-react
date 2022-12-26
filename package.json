@@ -7,12 +7,16 @@
 		"prepare": "husky install",
 		"lint": "eslint --ext .js,.ts,.jsx,.tsx --fix --quiet ./packages",
 		"build:dev": "rm -rf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js",
-		"demo": "vite serve demos/test-reconciler --config scripts/vite/vite.config.js --force"
+		"demo": "vite serve demos/test-reconciler --config scripts/vite/vite.config.js --force",
+		"test": "jest --config scripts/jest/jest.config.js"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
+		"@babel/core": "^7.20.7",
+		"@babel/plugin-transform-react-jsx": "^7.20.7",
+		"@babel/preset-env": "^7.20.2",
 		"@commitlint/cli": "^17.3.0",
 		"@commitlint/config-conventional": "^17.3.0",
 		"@rollup/plugin-alias": "^4.0.2",
@@ -26,6 +30,9 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-prettier": "^4.2.1",
 		"husky": "^8.0.2",
+		"jest": "^29.3.1",
+		"jest-config": "^29.3.1",
+		"jest-environment-jsdom": "^29.3.1",
 		"prettier": "^2.8.1",
 		"rollup": "^3.7.5",
 		"rollup-plugin-generate-package-json": "^3.2.0",

@@ -14,18 +14,18 @@ const outputFolder = getOutputPath(name);
 const basePlugins = getBaseRollupPlugins();
 
 export default [
-	// react
+	// react-dom
 	{
 		input: `${inputFolder}/index.ts`,
 		output: [
 			{
 				file: `${outputFolder}/index.js`,
-				name: 'index.js',
+				name: 'reactDOM',
 				format: 'umd'
 			},
 			{
 				file: `${outputFolder}/client.js`,
-				name: 'client.js',
+				name: 'client',
 				format: 'umd'
 			}
 		],
@@ -48,5 +48,17 @@ export default [
 				})
 			})
 		]
+	},
+	{
+		input: `${inputFolder}/test-utils.ts`,
+		output: [
+			{
+				file: `${outputFolder}/test-utils.js`,
+				name: 'testUtils',
+				format: 'umd'
+			}
+		],
+		external: ['react-dom', 'react'],
+		plugins: getBaseRollupPlugins()
 	}
 ];

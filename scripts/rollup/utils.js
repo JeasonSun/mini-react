@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import cjs from '@rollup/plugin-commonjs';
 import ts from 'rollup-plugin-typescript2';
-import replace from '@rollup/plugin-alias';
+import replace from '@rollup/plugin-replace';
 
 const outputDir = path.resolve(__dirname, '../../dist/node_modules');
 const packageDir = path.resolve(__dirname, '../../packages');

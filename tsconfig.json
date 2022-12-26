@@ -1,5 +1,8 @@
 {
   "compileOnSave": true,
+  "include": [
+    "./packages/**/*"
+  ],
   "compilerOptions": {
     "jsx": "react-jsx",
     "target": "ESNext",
@@ -25,6 +28,6 @@
       "hostConfig": [
         "./react-dom/src/hostConfig.ts"
       ]
-    }
+    },
   }
 }
