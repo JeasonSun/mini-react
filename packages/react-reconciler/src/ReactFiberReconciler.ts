@@ -20,11 +20,10 @@ export function updateContainer(
 	update.payload = { element };
 
 	// 将任务推进更新队列
-	const root = enqueueUpdate(current, update);
+	enqueueUpdate(current, update);
 
 	// 调度更新
-	if (root) {
-		scheduleUpdateOnFiber(root);
-	}
+	scheduleUpdateOnFiber(current);
+
 	return element;
 }

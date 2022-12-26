@@ -4,11 +4,18 @@ import { completeWork } from './completeWork';
 import { createWorkInProgress, FiberNode } from './ReactFiber';
 import { FiberRootNode } from './ReactFiberRoot';
 import { commitMutationEffects } from './commitWork';
+import { markUpdateFromFiberToRoot } from './ReactFiberClassUpdateQueue';
 
 let workInProgress: FiberNode | null = null;
 
-export function scheduleUpdateOnFiber(root: FiberRootNode) {
+export function scheduleUpdateOnFiber(fiber: FiberNode) {
+	const root = markUpdateFromFiberToRoot(fiber);
+	if (root === null) {
+		return null;
+	}
 	performSyncWorkOnRoot(root);
+
+	return null;
 }
 
 function performSyncWorkOnRoot(root: FiberRootNode) {

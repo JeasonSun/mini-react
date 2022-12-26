@@ -1,6 +1,7 @@
 import internals from 'shared/internals';
 import { Action, Dispatch, Dispatcher } from 'shared/ReactTypes';
 import { FiberNode } from './ReactFiber';
+import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
 
 // 当前正在渲染的Fiber
 let currentlyRenderingFiber: FiberNode | null = null;
@@ -115,6 +116,8 @@ function dispatchSetState<State>(
 	if (fiber === currentlyRenderingFiber) {
 		enqueueRenderPhaseUpdate(queue, update);
 	}
+
+	scheduleUpdateOnFiber(fiber);
 }
 
 function enqueueRenderPhaseUpdate<State>(

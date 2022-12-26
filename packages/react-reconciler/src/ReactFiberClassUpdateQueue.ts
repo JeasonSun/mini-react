@@ -73,11 +73,66 @@ export function markUpdateFromFiberToRoot(sourceFiber: FiberNode) {
 	return node.tag === HostRoot ? node.stateNode : null;
 }
 
-// export function processUpdateQueue(workInProgress: FiberNode) {
-// 	const queue = workInProgress.updateQueue;
+// 暂时不用 props，现在执行
+export function processUpdateQueue(workInProgress: FiberNode, props: any) {
+	const queue: UpdateQueue = workInProgress.updateQueue;
 
-// 	let pendingQueue = queue.shared.pending;
-// 	if (pendingQueue !== null) {
-// 		queue.shared.pending = null;
-// 	}
-// }
+	let firstBaseUpdate = queue.firstBaseUpdate;
+	let lastBaseUpdate = queue.lastBaseUpdate;
+
+	const pendingQueue = queue.shared.pending;
+
+	if (pendingQueue !== null) {
+		queue.shared.pending = null;
+		const lastPendingUpdate = pendingQueue;
+		const firstPendingUpdate = lastPendingUpdate.next;
+		lastPendingUpdate.next = null; // 断开环状链表。
+		if (lastBaseUpdate === null) {
+			firstBaseUpdate = firstPendingUpdate;
+		} else {
+			lastBaseUpdate.next = firstPendingUpdate;
+		}
+		lastBaseUpdate = lastPendingUpdate;
+
+		// // TODO: current
+		// const current = workInProgress.alternate;
+		// if (current !== null) {
+		// 	const currentQueue = current.updateQueue;
+		// 	const currentLastBaseUpdate = currentQueue.lastBastUpdate;
+		// 	if (currentLastBaseUpdate !== lastBaseUpdate) {
+		// 		if (currentLastBaseUpdate === null) {
+		// 			currentQueue.firstBaseUpdate = firstPendingUpdate;
+		// 		} else {
+		// 			currentLastBaseUpdate.next = firstPendingUpdate;
+		// 		}
+		// 		currentQueue.lastBaseUpdate = lastPendingUpdate;
+		// 	}
+		// }
+	}
+
+	if (firstBaseUpdate !== null) {
+		let newState = queue.baseState;
+
+		let update: Update | null = firstBaseUpdate;
+
+		do {
+			const prevState = newState;
+			if (update.payload instanceof Function) {
+				newState = update.payload(prevState, props);
+			} else {
+				newState = update.payload;
+			}
+			newState = { ...prevState, ...newState };
+			update = update.next;
+			if (update === null) {
+				break;
+			}
+		} while (true);
+
+		queue.baseState = newState;
+		queue.firstBaseUpdate = null;
+		queue.lastBaseUpdate = null;
+
+		workInProgress.memoizedState = newState;
+	}
+}
