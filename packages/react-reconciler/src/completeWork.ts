@@ -1,8 +1,18 @@
-import { NoFlags } from './ReactFiberFlags';
+import { NoFlags, Update } from './ReactFiberFlags';
 import { appendInitialChild, createTextInstance } from 'hostConfig';
-import { HostComponent, HostText, HostRoot } from './ReactWorkTags';
+import {
+	HostComponent,
+	HostText,
+	HostRoot,
+	FunctionComponent
+} from './ReactWorkTags';
 import { FiberNode } from './ReactFiber';
 import { createInstance, Instance } from 'hostConfig';
+
+function markUpdate(fiber: FiberNode) {
+	fiber.flags |= Update;
+}
+
 export const completeWork = (workInProgress: FiberNode) => {
 	console.log('completeWork', workInProgress);
 	// 递归中的归
@@ -25,6 +35,11 @@ export const completeWork = (workInProgress: FiberNode) => {
 		case HostText:
 			if (current !== null && workInProgress.stateNode) {
 				// UPDATE
+				const oldText = current.memoizedProps?.content;
+				const newText = newProps.content;
+				if (oldText !== newText) {
+					markUpdate(workInProgress);
+				}
 			} else {
 				const instance = createTextInstance(newProps.content);
 				workInProgress.stateNode = instance;
@@ -34,9 +49,14 @@ export const completeWork = (workInProgress: FiberNode) => {
 		case HostRoot:
 			bubbleProperties(workInProgress);
 			return null;
+
+		case FunctionComponent:
+			bubbleProperties(workInProgress);
+			return null;
+
 		default:
 			if (__DEV__) {
-				console.warn('未处理的completeWork情况', workInProgress);
+				console.error('未处理的completeWork情况', workInProgress);
 			}
 			break;
 	}

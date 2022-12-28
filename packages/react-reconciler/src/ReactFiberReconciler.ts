@@ -1,6 +1,6 @@
 import { Container } from 'hostConfig';
 import { ReactElement } from 'shared/ReactTypes';
-import { createUpdate, enqueueUpdate } from './ReactFiberClassUpdateQueue';
+import { createUpdate, enqueueUpdate } from './ReactFiberUpdateQueue';
 import { createFiberRoot, FiberRootNode } from './ReactFiberRoot';
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
 
@@ -20,7 +20,7 @@ export function updateContainer(
 	update.payload = { element };
 
 	// 将任务推进更新队列
-	enqueueUpdate(current, update);
+	enqueueUpdate(current.updateQueue, update);
 
 	// 调度更新
 	scheduleUpdateOnFiber(current);

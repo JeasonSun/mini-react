@@ -4,7 +4,7 @@ import { completeWork } from './completeWork';
 import { createWorkInProgress, FiberNode } from './ReactFiber';
 import { FiberRootNode } from './ReactFiberRoot';
 import { commitMutationEffects } from './commitWork';
-import { markUpdateFromFiberToRoot } from './ReactFiberClassUpdateQueue';
+import { markUpdateFromFiberToRoot } from './ReactFiberUpdateQueue';
 
 let workInProgress: FiberNode | null = null;
 
@@ -48,7 +48,7 @@ function commitRoot(root: FiberRootNode) {
 		return;
 	}
 	if (__DEV__) {
-		console.warn('commit 阶段开始', finishedWork);
+		console.log('commit 阶段开始', finishedWork);
 	}
 	root.finishedWork = null;
 

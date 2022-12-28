@@ -8,7 +8,7 @@ import {
 import { FiberNode } from './ReactFiber';
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber';
 import { renderWithHooks } from './ReactFiberHooks';
-import { processUpdateQueue } from './ReactFiberClassUpdateQueue';
+import { processUpdateQueue } from './ReactFiberUpdateQueue';
 export const beginWork = (workInProgress: FiberNode): FiberNode | null => {
 	console.log('beginWork开始', workInProgress);
 	switch (workInProgress.tag) {
@@ -35,9 +35,12 @@ function updateHostRoot(workInProgress: FiberNode) {
 	// const prevState = workInProgress.memoizedState;
 	// const prevChildren = prevState.element;
 
-	processUpdateQueue(workInProgress, nextProps);
+	const { memoizedState } = processUpdateQueue<{ element: ReactElement }>(
+		workInProgress.updateQueue,
+		nextProps
+	);
 
-	const nextState = workInProgress.memoizedState;
+	const nextState = memoizedState;
 	const nextChildren = nextState.element;
 
 	reconcileChildren(workInProgress, nextChildren);

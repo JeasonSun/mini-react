@@ -4,6 +4,7 @@ function App() {
 	const [num, setNumber] = useState(2);
 
 	window.setNumber = setNumber;
+	console.log(num);
 
 	return <div>{num}</div>;
 }

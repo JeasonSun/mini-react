@@ -1,12 +1,20 @@
 import internals from 'shared/internals';
 import { Action, Dispatch, Dispatcher } from 'shared/ReactTypes';
 import { FiberNode } from './ReactFiber';
+import {
+	createUpdate,
+	createUpdateQueue,
+	enqueueUpdate,
+	processUpdateQueue,
+	UpdateQueue
+} from './ReactFiberUpdateQueue';
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
 
 // 当前正在渲染的Fiber
 let currentlyRenderingFiber: FiberNode | null = null;
 // 处理中的 hook
 let workInProgressHook: Hook | null = null;
+let currentHook: Hook | null = null;
 
 const { ReactCurrentDispatcher } = internals;
 
@@ -15,16 +23,6 @@ interface Hook {
 	updateQueue: unknown;
 	next: Hook | null;
 }
-
-type Update<State> = {
-	action: Action<State> | null;
-	next: Update<State> | null;
-};
-
-type UpdateQueue<State> = {
-	pending: Update<State> | null;
-	dispatch: Dispatch<State> | null;
-};
 
 export function renderWithHooks(workInProgress: FiberNode) {
 	// 赋值操作
@@ -36,6 +34,7 @@ export function renderWithHooks(workInProgress: FiberNode) {
 	const current = workInProgress.alternate;
 	if (current !== null) {
 		// update
+		ReactCurrentDispatcher.current = HooksDispatcherOnUpdate;
 	} else {
 		// mount
 		ReactCurrentDispatcher.current = HooksDispatcherOnMount;
@@ -47,6 +46,7 @@ export function renderWithHooks(workInProgress: FiberNode) {
 	// 重置操作
 	currentlyRenderingFiber = null;
 	workInProgressHook = null;
+	currentHook = null;
 	return children;
 }
 
@@ -68,14 +68,14 @@ function mountState<State>(
 	}
 	hook.memoizedState = memoizedState;
 
-	const queue: UpdateQueue<State> = {
-		pending: null,
-		dispatch: null
-	};
+	const queue: UpdateQueue<State> = createUpdateQueue();
+	queue.baseState = hook.memoizedState;
+
 	hook.updateQueue = queue;
 
 	//@ts-ignore
 	const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue);
+	queue.dispatch = dispatch;
 	return [memoizedState, dispatch];
 }
 
@@ -107,29 +107,67 @@ function dispatchSetState<State>(
 	action: Action<State>
 ) {
 	// 创建一个 update
-	const update: Update<State> = {
-		action,
-		next: null
-	};
+	const update = createUpdate();
+	update.payload = action;
 	// 把创建的 update 对象加入到 updateQueue，形成串联的 updateQueue 链表。
-	// TODO: 这里先只处理渲染阶段， 后续要处理更新阶段
-	if (fiber === currentlyRenderingFiber) {
-		enqueueRenderPhaseUpdate(queue, update);
-	}
+	enqueueUpdate<State>(queue, update);
 
 	scheduleUpdateOnFiber(fiber);
 }
 
-function enqueueRenderPhaseUpdate<State>(
-	queue: UpdateQueue<State>,
-	update: Update<State>
-) {
-	const pending = queue.pending;
-	if (pending === null) {
-		update.next = update;
+const HooksDispatcherOnUpdate: Dispatcher = {
+	useState: updateState
+};
+
+function updateState<State>(): [State, Dispatch<State>] {
+	// 找到当前 useState 对应的 hook数据
+	const hook = updateWorkInProgressHook();
+
+	// 计算新 state 的逻辑
+	const queue = hook.updateQueue as UpdateQueue<State>;
+	const { memoizedState } = processUpdateQueue<State>(queue);
+	hook.memoizedState = memoizedState;
+
+	return [memoizedState, queue.dispatch as Dispatch<State>];
+}
+
+function updateWorkInProgressHook() {
+	let nextCurrentHook: Hook | null;
+	if (currentHook === null) {
+		const current = currentlyRenderingFiber?.alternate;
+		if (current !== null) {
+			nextCurrentHook = current?.memoizedState;
+		} else {
+			// mount
+			nextCurrentHook = null;
+		}
 	} else {
-		update.next = pending.next;
-		pending.next = update;
+		nextCurrentHook = currentHook.next;
 	}
-	queue.pending = update;
+	if (nextCurrentHook === null) {
+		// 1. mount 阶段
+		// 2. hook 数量不一致
+		throw new Error(
+			`组件 ${currentlyRenderingFiber?.type} 本次执行时的 Hook 比上次执行时多`
+		);
+	}
+	currentHook = nextCurrentHook as Hook;
+	const newHook: Hook = {
+		memoizedState: currentHook.memoizedState,
+		updateQueue: currentHook.updateQueue,
+		next: null
+	};
+
+	if (workInProgressHook === null) {
+		if (currentlyRenderingFiber === null) {
+			throw new Error('请在函数组件内调用 Hook ');
+		} else {
+			workInProgressHook = newHook;
+			currentlyRenderingFiber.memoizedState = workInProgressHook;
+		}
+	} else {
+		workInProgressHook.next = newHook;
+		workInProgressHook = newHook;
+	}
+	return workInProgressHook;
 }

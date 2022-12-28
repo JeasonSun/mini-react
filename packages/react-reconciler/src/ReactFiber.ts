@@ -22,6 +22,7 @@ export class FiberNode {
 	alternate: FiberNode | null;
 	flags: Flags;
 	subtreeFlags: Flags;
+	deletions: FiberNode[] | null;
 	elementType: any;
 	updateQueue: any;
 	memoizedState: any;
@@ -73,6 +74,7 @@ export class FiberNode {
 		// ========= 更新导致的DOM操作，打标签，并保存在effectList单向链表中 ========
 		this.flags = NoFlags; // 表示当前fiber如何更新（插入/更新/删除）
 		this.subtreeFlags = NoFlags;
+		this.deletions = null;
 
 		this.nextEffect = null; // 下一个需要更新的fiber
 		this.firstEffect = null; // 指向所有子节点里，需要更新的fiber里的第一个
@@ -145,6 +147,7 @@ export function createFiberFromElement(element: ReactElement) {
 	}
 
 	const fiber = createFiber(fiberTag, props, key);
-	fiber.type = type;
+	fiber.type = type; // 源码中，type 需要会根据不同的组件类型 处理
+	fiber.elementType = type;
 	return fiber;
 }

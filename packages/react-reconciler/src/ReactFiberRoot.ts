@@ -1,5 +1,5 @@
 import { createHostRootFiber, FiberNode } from './ReactFiber';
-import { initializeUpdateQueue } from './ReactFiberClassUpdateQueue';
+import { initializeUpdateQueue } from './ReactFiberUpdateQueue';
 import { Container } from 'hostConfig';
 
 export function createFiberRoot(containerInfo: Container) {
