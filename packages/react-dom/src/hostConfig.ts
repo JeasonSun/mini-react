@@ -1,11 +1,14 @@
+import { Props } from 'shared/ReactTypes';
 import { HostText } from 'react-reconciler/src/ReactWorkTags';
-import { FiberNode } from './../../react-reconciler/src/ReactFiber';
+import { FiberNode } from 'react-reconciler/src/ReactFiber';
+import { DOMElement, elementPropsKey } from './syntheticEvent';
 export type Container = Element;
 export type Instance = Element;
 export type TextInstance = Text;
 
-export const createInstance = (type: string): Instance => {
+export const createInstance = (type: string, props: Props): Instance => {
 	const element = document.createElement(type);
+	updateFiberProps(element as DOMElement, props);
 	return element;
 };
 
@@ -45,4 +48,8 @@ export function commitUpdate(fiber: FiberNode) {
 
 export function commitTextUpdate(textInstance: TextInstance, content: string) {
 	textInstance.textContent = content;
+}
+
+export function updateFiberProps(node: DOMElement, props: Props) {
+	node[elementPropsKey] = props;
 }

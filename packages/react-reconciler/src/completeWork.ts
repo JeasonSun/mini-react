@@ -7,7 +7,7 @@ import {
 	FunctionComponent
 } from './ReactWorkTags';
 import { FiberNode } from './ReactFiber';
-import { createInstance, Instance } from 'hostConfig';
+import { createInstance, Instance, updateFiberProps } from 'hostConfig';
 
 function markUpdate(fiber: FiberNode) {
 	fiber.flags |= Update;
@@ -23,9 +23,11 @@ export const completeWork = (workInProgress: FiberNode) => {
 		case HostComponent:
 			if (current !== null && workInProgress.stateNode) {
 				// update
+				// 更新后，需要同步更新 props
+				updateFiberProps(workInProgress.stateNode, newProps);
 			} else {
 				// 1. 构建DOM
-				const instance = createInstance(workInProgress.type);
+				const instance = createInstance(workInProgress.type, newProps);
 				// 2. 将 Fiber 上已经创建的子 DOM 挂到当前的 DOM 上
 				appendAllChildren(instance, workInProgress);
 				workInProgress.stateNode = instance;
