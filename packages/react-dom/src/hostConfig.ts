@@ -1,14 +1,23 @@
 import { Props } from 'shared/ReactTypes';
 import { HostText } from 'react-reconciler/src/ReactWorkTags';
 import { FiberNode } from 'react-reconciler/src/ReactFiber';
-import { DOMElement, elementPropsKey } from './syntheticEvent';
+import {
+	DOMElement,
+	elementPropsKey,
+	internalInstanceKey
+} from './events/DOMPluginEventSystem';
 export type Container = Element;
 export type Instance = Element;
 export type TextInstance = Text;
 
-export const createInstance = (type: string, props: Props): Instance => {
+export const createInstance = (
+	type: string,
+	props: Props,
+	internalInstanceHandle: FiberNode
+): Instance => {
 	const element = document.createElement(type);
-	updateFiberProps(element as DOMElement, props);
+	precacheFiberNode(internalInstanceHandle, element);
+	updateFiberProps(element as unknown as DOMElement, props);
 	return element;
 };
 
@@ -52,4 +61,15 @@ export function commitTextUpdate(textInstance: TextInstance, content: string) {
 
 export function updateFiberProps(node: DOMElement, props: Props) {
 	node[elementPropsKey] = props;
+}
+
+export function getFiberCurrentPropsFromNode(node: DOMElement): Props {
+	return (node as any)[elementPropsKey] || null;
+}
+
+export function precacheFiberNode(
+	hostInst: FiberNode,
+	node: Instance | TextInstance
+) {
+	(node as any)[internalInstanceKey] = hostInst;
 }

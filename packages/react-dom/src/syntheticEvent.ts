@@ -1,7 +1,8 @@
 import { Container } from 'hostConfig';
 import { Props } from 'shared/ReactTypes';
 
-export const elementPropsKey = '__props';
+export const elementPropsKey = '__reactProps$';
+export const internalInstanceKey = '__reactFiber$';
 
 export interface DOMElement extends Element {
 	[elementPropsKey]: Props;

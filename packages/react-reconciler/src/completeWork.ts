@@ -27,7 +27,11 @@ export const completeWork = (workInProgress: FiberNode) => {
 				updateFiberProps(workInProgress.stateNode, newProps);
 			} else {
 				// 1. 构建DOM
-				const instance = createInstance(workInProgress.type, newProps);
+				const instance = createInstance(
+					workInProgress.type,
+					newProps,
+					workInProgress
+				);
 				// 2. 将 Fiber 上已经创建的子 DOM 挂到当前的 DOM 上
 				appendAllChildren(instance, workInProgress);
 				workInProgress.stateNode = instance;
