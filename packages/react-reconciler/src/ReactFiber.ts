@@ -115,8 +115,10 @@ export function createWorkInProgress(current: FiberNode, pendingProps: Props) {
 		// update
 		workInProgress.pendingProps = pendingProps;
 		workInProgress.type = current.type;
+		workInProgress.flags = NoFlags;
+		workInProgress.subtreeFlags = NoFlags;
+		workInProgress.deletions = null;
 	}
-	workInProgress.flags = NoFlags;
 	workInProgress.memoizedProps = current.memoizedProps;
 	workInProgress.memoizedState = current.memoizedState;
 	workInProgress.updateQueue = current.updateQueue;
