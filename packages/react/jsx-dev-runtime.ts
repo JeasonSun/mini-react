@@ -1,1 +1,1 @@
-export { jsxDEV } from './src/createElement';
+export { jsxDEV, Fragment } from './src/createElement';

@@ -4,7 +4,8 @@ import {
 	HostComponent,
 	HostRoot,
 	WorkTag,
-	FunctionComponent
+	FunctionComponent,
+	Fragment
 } from './ReactWorkTags';
 
 export class FiberNode {
@@ -151,5 +152,10 @@ export function createFiberFromElement(element: ReactElement) {
 	const fiber = createFiber(fiberTag, props, key);
 	fiber.type = type; // 源码中，type 需要会根据不同的组件类型 处理
 	fiber.elementType = type;
+	return fiber;
+}
+
+export function createFiberFromFragment(elements: any[], key: Key): FiberNode {
+	const fiber = new FiberNode(Fragment, elements, key);
 	return fiber;
 }

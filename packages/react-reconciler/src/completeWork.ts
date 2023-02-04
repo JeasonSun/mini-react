@@ -4,7 +4,8 @@ import {
 	HostComponent,
 	HostText,
 	HostRoot,
-	FunctionComponent
+	FunctionComponent,
+	Fragment
 } from './ReactWorkTags';
 import { FiberNode } from './ReactFiber';
 import { createInstance, Instance, updateFiberProps } from 'hostConfig';
@@ -52,11 +53,10 @@ export const completeWork = (workInProgress: FiberNode) => {
 			}
 			bubbleProperties(workInProgress);
 			return null;
-		case HostRoot:
-			bubbleProperties(workInProgress);
-			return null;
 
+		case HostRoot:
 		case FunctionComponent:
+		case Fragment:
 			bubbleProperties(workInProgress);
 			return null;
 
