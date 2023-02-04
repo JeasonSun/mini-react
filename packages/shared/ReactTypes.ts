@@ -1,9 +1,9 @@
 export type ElementType = any;
-export type Key = string | null;
+export type Key = any;
 export type Ref = any;
 export type Props = {
 	[key: string]: any;
-	children?: ReactElement;
+	children?: ReactElement[];
 };
 
 export interface ReactElement {

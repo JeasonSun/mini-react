@@ -24,6 +24,7 @@ module.exports = {
 		'@typescript-eslint/ban-ts-comment': 'off',
 		'@typescript-eslint/no-unused-vars': 'off',
 		'no-prototype-builtins': 'off',
-		'prefer-rest-params': 'off'
+		'prefer-rest-params': 'off',
+		'no-non-null-assertion': 'off'
 	}
 };

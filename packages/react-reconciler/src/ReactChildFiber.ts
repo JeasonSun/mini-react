@@ -1,5 +1,5 @@
 import { HostText, Fragment } from './ReactWorkTags';
-import { ReactElement, Props } from 'shared/ReactTypes';
+import { ReactElement, Props, Key } from 'shared/ReactTypes';
 import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from 'shared/ReactSymbols';
 import {
 	createFiberFromElement,
@@ -64,7 +64,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 						// 对于fragment，属性应该是children
 						let props = element.props;
 						if (elementType === REACT_FRAGMENT_TYPE) {
-							props = element.props.children;
+							props = element.props.children as Props;
 						}
 						const existing = useFiber(child, props);
 						existing.return = returnFiber;
@@ -89,7 +89,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 
 		let fiber;
 		if (element.type === REACT_FRAGMENT_TYPE) {
-			fiber = createFiberFromFragment(element.props.children, key);
+			fiber = createFiberFromFragment(element.props.children!, key);
 		} else {
 			fiber = createFiberFromElement(element);
 		}
@@ -277,7 +277,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 	function reconcileChildFibers(
 		returnFiber: FiberNode,
 		currentFirstChild: FiberNode | null,
-		newChild?: ReactElement
+		newChild?: any
 	) {
 		const isUnKeyedTopLevelFragment =
 			typeof newChild === 'object' &&
