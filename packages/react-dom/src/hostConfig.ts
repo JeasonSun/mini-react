@@ -81,3 +81,10 @@ export function precacheFiberNode(
 ) {
 	(node as any)[internalInstanceKey] = hostInst;
 }
+
+export const scheduleMicroTask =
+	typeof queueMicrotask === 'function'
+		? queueMicrotask
+		: typeof Promise === 'function'
+		? (callback: (...args: any) => void) => Promise.resolve(null).then(callback)
+		: setTimeout;

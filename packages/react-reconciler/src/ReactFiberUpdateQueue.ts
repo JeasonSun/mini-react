@@ -1,3 +1,4 @@
+import { Lane, NoLane } from './ReactFiberLane';
 import { HostRoot } from './ReactWorkTags';
 import { FiberNode } from './ReactFiber';
 import { Dispatch } from 'shared/ReactTypes';
@@ -5,6 +6,7 @@ import { Dispatch } from 'shared/ReactTypes';
 export type Update<State> = {
 	payload: any;
 	next: Update<State> | null;
+	lane: Lane;
 };
 
 type SharedQueue<State> = {
@@ -37,7 +39,8 @@ export function initializeUpdateQueue<State>(fiber: FiberNode) {
 export function createUpdate<State>(): Update<State> {
 	const update = {
 		payload: null,
-		next: null
+		next: null,
+		lane: NoLane
 	};
 	return update;
 }
@@ -96,7 +99,8 @@ export function markUpdateFromFiberToRoot(sourceFiber: FiberNode) {
  */
 export function processUpdateQueue<State>(
 	queue: UpdateQueue<State>,
-	props?: any
+	props: any,
+	renderLane: Lane
 ): { memoizedState: State } {
 	// const queue: UpdateQueue<State> = workInProgress.updateQueue;
 
@@ -125,7 +129,10 @@ export function processUpdateQueue<State>(
 		let update: Update<State> | null = firstBaseUpdate;
 
 		do {
-			newState = getStateFromUpdate(update, newState, props);
+			if (update.lane === renderLane) {
+				newState = getStateFromUpdate(update, newState, props);
+			}
+
 			update = update.next;
 			if (update === null) {
 				break;

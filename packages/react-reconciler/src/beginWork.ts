@@ -1,3 +1,4 @@
+import { Lane } from './ReactFiberLane';
 import { ReactElement } from 'shared/ReactTypes';
 import {
 	HostComponent,
@@ -10,17 +11,20 @@ import { FiberNode } from './ReactFiber';
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber';
 import { renderWithHooks } from './ReactFiberHooks';
 import { processUpdateQueue } from './ReactFiberUpdateQueue';
-export const beginWork = (workInProgress: FiberNode): FiberNode | null => {
+export const beginWork = (
+	workInProgress: FiberNode,
+	renderLane: Lane
+): FiberNode | null => {
 	console.log('beginWork开始', workInProgress);
 	switch (workInProgress.tag) {
 		case HostRoot:
-			return updateHostRoot(workInProgress);
+			return updateHostRoot(workInProgress, renderLane);
 		case HostComponent:
 			return updateHostComponent(workInProgress);
 		case HostText:
 			return null;
 		case FunctionComponent:
-			return updateFunctionComponent(workInProgress);
+			return updateFunctionComponent(workInProgress, renderLane);
 		case Fragment:
 			return updateFragment(workInProgress);
 		default:
@@ -32,7 +36,7 @@ export const beginWork = (workInProgress: FiberNode): FiberNode | null => {
 	return workInProgress.child;
 };
 
-function updateHostRoot(workInProgress: FiberNode) {
+function updateHostRoot(workInProgress: FiberNode, renderLane: Lane) {
 	const nextProps = workInProgress.pendingProps;
 
 	// const prevState = workInProgress.memoizedState;
@@ -40,7 +44,8 @@ function updateHostRoot(workInProgress: FiberNode) {
 
 	const { memoizedState } = processUpdateQueue<{ element: ReactElement }>(
 		workInProgress.updateQueue,
-		nextProps
+		nextProps,
+		renderLane
 	);
 
 	const nextState = memoizedState;
@@ -57,8 +62,8 @@ function updateHostComponent(workInProgress: FiberNode) {
 	return workInProgress.child;
 }
 
-function updateFunctionComponent(workInProgress: FiberNode) {
-	const nextChildren = renderWithHooks(workInProgress);
+function updateFunctionComponent(workInProgress: FiberNode, renderLane: Lane) {
+	const nextChildren = renderWithHooks(workInProgress, renderLane);
 	reconcileChildren(workInProgress, nextChildren);
 	return workInProgress.child;
 }
@@ -69,7 +74,7 @@ function updateFragment(workInProgress: FiberNode) {
 	return workInProgress.child;
 }
 
-function reconcileChildren(workInProgress: FiberNode, children?: ReactElement) {
+function reconcileChildren(workInProgress: FiberNode, children?: any) {
 	const current = workInProgress.alternate;
 	// 由于一开始就已经创建了 HostRootFiber，所以current是存在的
 	if (current !== null) {
