@@ -1,3 +1,5 @@
+import { Effect } from './ReactFiberHooks';
+import { HookHasEffect, Passive } from './ReactHookEffectTags';
 import {
 	getHighestPriorityLane,
 	Lane,
@@ -6,18 +8,23 @@ import {
 	NoLane,
 	SyncLane
 } from './ReactFiberLane';
-import { MutationMask, NoFlags } from './ReactFiberFlags';
+import { Flags, MutationMask, NoFlags, PassiveMask } from './ReactFiberFlags';
 import { beginWork } from './beginWork';
 import { completeWork } from './completeWork';
 import { createWorkInProgress, FiberNode } from './ReactFiber';
-import { FiberRootNode } from './ReactFiberRoot';
+import { FiberRootNode, PendingPassiveEffects } from './ReactFiberRoot';
 import { commitMutationEffects } from './commitWork';
 import { markUpdateFromFiberToRoot } from './ReactFiberUpdateQueue';
 import { scheduleMicroTask } from 'hostConfig';
 import { flushSyncCallbacks, scheduleSyncCallback } from './ReactSyncTaskQueue';
+import {
+	unstable_scheduleCallback as scheduleCallback,
+	unstable_NormalPriority as NormalPriority
+} from 'scheduler';
 
 let workInProgress: FiberNode | null = null;
 let workInProgressRenderLane: Lane = NoLane;
+let rootDoesHasPassiveEffects = false;
 
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
 	const root = markUpdateFromFiberToRoot(fiber);
@@ -109,6 +116,21 @@ function commitRoot(root: FiberRootNode) {
 
 	markRootFinished(root, lane);
 
+	if (
+		(finishedWork.flags & PassiveMask) !== NoFlags ||
+		(finishedWork.subtreeFlags & PassiveMask) !== NoFlags
+	) {
+		if (!rootDoesHasPassiveEffects) {
+			rootDoesHasPassiveEffects = true;
+			// 调度副作用
+			scheduleCallback(NormalPriority, () => {
+				// 执行副作用
+				flushPassiveEffects(root.pendingPassiveEffects);
+				return;
+			});
+		}
+	}
+
 	// 判断是否存在3个子阶段需要执行的操作
 	// root flags root subtreeFlags
 	const subtreeHasEffect =
@@ -116,11 +138,13 @@ function commitRoot(root: FiberRootNode) {
 	const rootHasEffect = (finishedWork.flags & MutationMask) !== NoFlags;
 
 	if (subtreeHasEffect || rootHasEffect) {
-		commitMutationEffects(finishedWork);
+		commitMutationEffects(finishedWork, root);
 		root.current = finishedWork;
 	} else {
 		root.current = finishedWork;
 	}
+	rootDoesHasPassiveEffects = false;
+	ensureRootIsScheduled(root);
 }
 
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
@@ -158,4 +182,65 @@ function completeUnitOfWork(fiber: FiberNode) {
 		completedWork = completedWork?.return || null;
 		workInProgress = completedWork;
 	} while (completedWork !== null);
+}
+
+function flushPassiveEffects(pendingPassiveEffect: PendingPassiveEffects) {
+	pendingPassiveEffect.unmount.forEach((effect) => {
+		commitHookEffectListUnmount(Passive, effect);
+	});
+	pendingPassiveEffect.unmount = [];
+
+	pendingPassiveEffect.update.forEach((effect) => {
+		commitHookEffectListDestroy(Passive | HookHasEffect, effect);
+	});
+
+	pendingPassiveEffect.update.forEach((effect) => {
+		commitHookEffectListCreate(Passive | HookHasEffect, effect);
+	});
+
+	pendingPassiveEffect.update = [];
+
+	flushSyncCallbacks();
+}
+
+export function commitHookEffectListUnmount(flags: Flags, lastEffect: Effect) {
+	commitHookEffectList(flags, lastEffect, (effect) => {
+		const destroy = effect.destroy;
+		if (typeof destroy === 'function') {
+			destroy();
+		}
+		effect.tag &= ~HookHasEffect;
+	});
+}
+
+export function commitHookEffectListDestroy(flags: Flags, lastEffect: Effect) {
+	commitHookEffectList(flags, lastEffect, (effect) => {
+		const destroy = effect.destroy;
+		if (typeof destroy === 'function') {
+			destroy();
+		}
+	});
+}
+
+export function commitHookEffectListCreate(flags: Flags, lastEffect: Effect) {
+	commitHookEffectList(flags, lastEffect, (effect) => {
+		const create = effect.create;
+		if (typeof create === 'function') {
+			effect.destroy = create();
+		}
+	});
+}
+
+export function commitHookEffectList(
+	flags: Flags,
+	lastEffect: Effect,
+	callback: (effect: Effect) => void
+) {
+	let effect = lastEffect.next as Effect;
+	do {
+		if ((effect.tag & flags) === flags) {
+			callback(effect);
+		}
+		effect = effect.next as Effect;
+	} while (effect !== lastEffect.next);
 }

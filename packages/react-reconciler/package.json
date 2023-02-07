@@ -7,6 +7,8 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@types/scheduler": "^0.16.2",
+		"scheduler": "^0.23.0",
 		"shared": "workspace:*"
 	},
 	"peerDependencies": {
